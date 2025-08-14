@@ -1,0 +1,124 @@
+/* General Page Styling */
+body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(to bottom right, #cce9ff, #f4f6f8);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Navbar */
+header {
+    background-color: #0077b6;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Chat Container */
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 600px;
+    margin: 20px auto;
+    width: 100%;
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Chat Box */
+.chat-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background-color: #fdfdfd;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: #0077b6 #f4f6f8;
+}
+
+.chat-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+    background-color: #0077b6;
+    border-radius: 4px;
+}
+
+/* Message Bubbles */
+.message {
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 20px;
+    max-width: 75%;
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.05);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.user {
+    align-self: flex-end;
+    background: linear-gradient(to right, #0077b6, #0096c7);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.bot {
+    align-self: flex-start;
+    background: #e0e0e0;
+    color: black;
+    border-bottom-left-radius: 5px;
+}
+
+/* Typing Indicator */
+.typing {
+    font-style: italic;
+    font-size: 13px;
+    color: gray;
+    margin: 5px 0;
+}
+
+/* Input Area */
+.input-area {
+    display: flex;
+    border-top: 1px solid #ccc;
+    background-color: white;
+}
+
+.input-area input {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+.input-area button {
+    background: linear-gradient(to right, #0077b6, #0096c7);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.input-area button:hover {
+    background: linear-gradient(to right, #023e8a, #0077b6);
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
