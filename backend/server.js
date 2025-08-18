@@ -4,24 +4,50 @@ dotenv.config();
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Handle __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Track blocked state
 let isBlocked = false;
 
+/* ---------- Serve Static HTML Pages ---------- */
+app.use(express.static(path.join(__dirname, ".."))); // serve style.css, script.js, etc.
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "index.html"));
+});
+
+app.get("/about", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "about.html"));
+});
+
+app.get("/contact", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "contact.html"));
+});
+
+app.get("/chatbot", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "chatbot.html"));
+});
+
+
+/* ---------- Chatbot API ---------- */
 app.post("/api/chat", async (req, res) => {
   const { question } = req.body;
   const lowerQ = question.toLowerCase();
 
-  // Abusive words list
   const abusiveWords = ["idiot", "stupid", "dumb", "nonsense", "fool"];
 
-  // If blocked, only allow "sorry"
+  // If blocked
   if (isBlocked) {
     if (lowerQ.includes("sorry")) {
       isBlocked = false;
@@ -71,4 +97,5 @@ User's question: "${question}"
   }
 });
 
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+/* ---------- Start Server ---------- */
+app.listen(3000, () => console.log("🚀 Server running on http://localhost:3000"));
