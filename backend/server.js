@@ -6,6 +6,8 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import mysql from "mysql2";
+import bcrypt from "bcrypt"; // for password hashing
 
 const app = express();
 app.use(cors());
@@ -15,30 +17,99 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ---------- MySQL Connection ----------
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT
+});
+
+db.connect(err => {
+  if (err) {
+    console.error("❌ MySQL connection failed:", err);
+  } else {
+    console.log("✅ Connected to MySQL Database");
+  }
+});
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Track blocked state
 let isBlocked = false;
 
-/* ---------- Serve Static HTML Pages ---------- */
-app.use(express.static(path.join(__dirname, ".."))); // serve style.css, script.js, etc.
+/* ---------- Serve Static Frontend ---------- */
+// Serve CSS, JS, Images, etc.
+app.use(express.static(path.join(__dirname, "../frontend")));
 
+/* ---------- Serve Static HTML Pages ---------- */
+// Serve CSS, JS, images from public folder
+app.use(express.static(path.join(__dirname, "..", "frontend", "public")));
+
+// HTML Routes
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "index.html"));
+  res.sendFile(path.join(__dirname, "..", "frontend", "public", "index.html"));
 });
 
 app.get("/about", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "about.html"));
+  res.sendFile(path.join(__dirname, "..", "frontend", "public", "about.html"));
 });
 
 app.get("/contact", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "contact.html"));
+  res.sendFile(path.join(__dirname, "..", "frontend", "public", "contact.html"));
 });
 
 app.get("/chatbot", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "chatbot.html"));
+  res.sendFile(path.join(__dirname, "..", "frontend", "public", "chatbot.html"));
 });
 
+/* ---------- Signup API ---------- */
+app.post("/api/signup", async (req, res) => {
+  const { username, email, password } = req.body;
+
+  if (!username || !email || !password) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  db.query(
+    "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+    [username, email, hashedPassword],
+    (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Error creating user" });
+      }
+      res.json({ message: "✅ User registered successfully!" });
+    }
+  );
+});
+
+/* ---------- Login API ---------- */
+app.post("/api/login", (req, res) => {
+  const { email, password } = req.body;
+
+  db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Database error" });
+    }
+    if (results.length === 0) {
+      return res.status(400).json({ message: "❌ User not found" });
+    }
+
+    const user = results[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "❌ Invalid credentials" });
+    }
+
+    res.json({ message: "✅ Login successful!" });
+  });
+});
 
 /* ---------- Chatbot API ---------- */
 app.post("/api/chat", async (req, res) => {
@@ -47,7 +118,6 @@ app.post("/api/chat", async (req, res) => {
 
   const abusiveWords = ["idiot", "stupid", "dumb", "nonsense", "fool"];
 
-  // If blocked
   if (isBlocked) {
     if (lowerQ.includes("sorry")) {
       isBlocked = false;
@@ -60,7 +130,6 @@ app.post("/api/chat", async (req, res) => {
     });
   }
 
-  // Detect abusive words
   if (abusiveWords.some(word => lowerQ.includes(word))) {
     isBlocked = true;
     return res.json({
@@ -73,15 +142,14 @@ app.post("/api/chat", async (req, res) => {
 
     const prompt = `
 You are a friendly, expert travel guide chatbot.
-You must ONLY answer questions related to travel (trips, destinations, itineraries, hotels, flights, food, sightseeing, budgets, tips, etc.).
-If the question is NOT about travel, respond exactly with:
-"❌ I can only help with travel-related queries. ✈️"
+You must ONLY answer questions related to travel.
+If not travel related: respond with "❌ I can only help with travel-related queries. ✈️"
 
-When the question IS about travel:
-- Always provide a complete, structured, day-by-day itinerary without asking for more details.
-- Include attractions, food recommendations, budget estimates, and tips.
-- Minimum 3 days plan if duration is not specified.
-- Use bullet points and clear headings.
+When travel related:
+- Provide structured, day-by-day itinerary
+- Attractions, food, budget, tips
+- Minimum 3 days if duration not mentioned
+- Use bullet points & headings
 
 User's question: "${question}"
     `;

@@ -1,0 +1,88 @@
+/* ---------- General Styles ---------- */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- Header / Titles ---------- */
+h2 {
+  margin-top: 40px;
+  color: #333;
+}
+
+/* ---------- Forms ---------- */
+form {
+  background-color: #fff;
+  padding: 30px;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* ---------- Messages ---------- */
+p {
+  margin-top: 15px;
+  font-weight: bold;
+  color: green;
+}
+
+/* Error messages */
+p.error {
+  color: red;
+}
+
+/* ---------- Links / Navigation ---------- */
+nav {
+  width: 100%;
+  background-color: #007bff;
+  padding: 10px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 15px;
+  font-weight: bold;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Home / About / Contact Pages ---------- */
+.container {
+  max-width: 800px;
+  margin: 40px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
