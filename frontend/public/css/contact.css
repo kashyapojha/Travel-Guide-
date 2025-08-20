@@ -1,0 +1,83 @@
+/* contact.css */
+
+/* Body & page layout */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f2f7fa;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+/* Header & Navigation */
+header {
+  background-color: #007bff;
+  padding: 15px 0;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 20px;
+  font-weight: 500;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+nav a.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Main content */
+.page-content {
+  max-width: 800px;
+  margin: 50px auto;
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.page-content h1 {
+  font-size: 32px;
+  margin-bottom: 20px;
+  color: #007bff;
+}
+
+.page-content p {
+  font-size: 18px;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+.page-content strong {
+  color: #007bff;
+}
+
+/* Responsive */
+@media screen and (max-width: 600px) {
+  .page-content {
+    padding: 30px 20px;
+  }
+
+  nav a {
+    margin: 0 10px;
+    font-size: 14px;
+  }
+
+  .page-content h1 {
+    font-size: 28px;
+  }
+
+  .page-content p {
+    font-size: 16px;
+  }
+}

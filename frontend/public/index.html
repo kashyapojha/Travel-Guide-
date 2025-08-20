@@ -4,8 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Travel Guide Chatbot</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="chatbot.css" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/about.css">
+  <link rel="stylesheet" href="css/contact.css">
+  <link rel="stylesheet" href="css/chatbot.css">
 </head>
 <body>
   <!-- Navbar -->
@@ -14,6 +18,8 @@
       <a href="index.html">🏠 Home</a>
       <a href="about.html">ℹ️ About</a>
       <a href="contact.html">📩 Contact</a>
+      <a href="login.html">🔒 Login</a>
+      <a href="signup.html">📝 Sign Up</a>
     </nav>
   </header>
 
@@ -28,6 +34,47 @@
     </div>
   </main>
 
-  <script src="script.js"></script>
+  <!-- ✅ Corrected JS path -->
+  <script src="js/chatbot.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Travel Guide Chatbot</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/about.css">
+  <link rel="stylesheet" href="css/contact.css">
+  <link rel="stylesheet" href="css/chatbot.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header>
+    <nav>
+      <a href="index.html">🏠 Home</a>
+      <a href="about.html">ℹ️ About</a>
+      <a href="contact.html">📩 Contact</a>
+      <a href="login.html">🔒 Login</a>
+      <a href="signup.html">📝 Sign Up</a>
+    </nav>
+  </header>
+
+  <!-- Chat Container -->
+  <main class="chat-container">
+    <div id="chat-box" class="chat-box"></div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Type your message..." />
+      <button id="send-btn">Send</button>
+    </div>
+  </main>
+
+  <!-- ✅ Corrected JS path -->
+  <script src="js/chatbot.js"></script>
 </body>
 </html>

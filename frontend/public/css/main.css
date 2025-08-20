@@ -1,88 +1,91 @@
-/* ---------- General Styles ---------- */
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
+  font-family: 'Poppins', sans-serif;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* ---------- Header / Titles ---------- */
-h2 {
-  margin-top: 40px;
+  background-color: #f5f5f5;
   color: #333;
 }
 
-/* ---------- Forms ---------- */
-form {
-  background-color: #fff;
-  padding: 30px;
-  margin-top: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-}
-
-input {
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-button {
-  padding: 10px;
-  background-color: #007bff;
+header {
+  background-color: #0077b6;
   color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  padding: 15px 0;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
 }
 
-button:hover {
-  background-color: #0056b3;
-}
-
-/* ---------- Messages ---------- */
-p {
-  margin-top: 15px;
-  font-weight: bold;
-  color: green;
-}
-
-/* Error messages */
-p.error {
-  color: red;
-}
-
-/* ---------- Links / Navigation ---------- */
 nav {
-  width: 100%;
-  background-color: #007bff;
-  padding: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  background-color: #023e8a;
+  padding: 10px 0;
 }
 
 nav a {
   color: white;
   text-decoration: none;
-  margin: 0 15px;
-  font-weight: bold;
+  font-weight: 500;
+  transition: 0.3s;
 }
 
 nav a:hover {
-  text-decoration: underline;
+  color: #90e0ef;
 }
 
-/* ---------- Home / About / Contact Pages ---------- */
 .container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 40px auto;
-  background-color: #fff;
+  padding: 0 20px;
+}
+
+.card {
+  background-color: white;
   padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+button {
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  padding: 10px 25px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #023e8a;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0 20px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+footer {
+  background-color: #023e8a;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    gap: 15px;
+  }
 }
