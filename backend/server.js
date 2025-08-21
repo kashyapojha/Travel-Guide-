@@ -14,7 +14,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Handle __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -33,34 +32,38 @@ db.connect(err => {
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const API_KEY = process.env.WEATHER_API_KEY;
+const ACCU_KEY = process.env.ACCU_KEY;
+const RAPID_KEY = process.env.RAPIDAPI_KEY;
 
-// Track blocked state
 let isBlocked = false;
 
-/* ---------- Serve Static Frontend ---------- */
+// ---------- Serve Frontend ----------
 app.use(express.static(path.join(__dirname, "../frontend")));
 app.use(express.static(path.join(__dirname, "..", "frontend", "public")));
 
-/* ---------- HTML Routes ---------- */
+// ---------- HTML Routes ----------
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "..", "frontend", "public", "index.html")));
 app.get("/about", (req, res) => res.sendFile(path.join(__dirname, "..", "frontend", "public", "about.html")));
 app.get("/contact", (req, res) => res.sendFile(path.join(__dirname, "..", "frontend", "public", "contact.html")));
 app.get("/chatbot", (req, res) => res.sendFile(path.join(__dirname, "..", "frontend", "public", "chatbot.html")));
 
-/* ---------- Signup API ---------- */
+// ---------- Signup API ----------
 app.post("/api/signup", async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) return res.status(400).json({ message: "All fields are required" });
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  db.query("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", [username, email, hashedPassword], (err) => {
-    if (err) return res.status(500).json({ message: "Error creating user" });
-    res.json({ message: "✅ User registered successfully!" });
-  });
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.query("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", [username, email, hashedPassword], (err) => {
+      if (err) return res.status(500).json({ message: "Error creating user" });
+      res.json({ message: "✅ User registered successfully!" });
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error hashing password" });
+  }
 });
 
-/* ---------- Login API ---------- */
+// ---------- Login API ----------
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
   db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
@@ -75,44 +78,79 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-/* ---------- Weather API (Next 3 Days) ---------- */
+// ---------- Weather Helper ----------
+async function getLocationKey(city) {
+  const res = await fetch(`https://dataservice.accuweather.com/locations/v1/cities/search?apikey=${ACCU_KEY}&q=${encodeURIComponent(city)}`);
+  const data = await res.json();
+  if (!data[0]) throw new Error("City not found");
+  return data[0].Key;
+}
+
+async function get3DayForecast(locationKey) {
+  const res = await fetch(`https://dataservice.accuweather.com/forecasts/v1/daily/3day/${locationKey}?apikey=${ACCU_KEY}&metric=true`);
+  const data = await res.json();
+  if (!data.DailyForecasts) throw new Error("Weather data not found");
+
+  return data.DailyForecasts.map(day => ({
+    date: day.Date.split("T")[0],
+    min_temp: day.Temperature.Minimum.Value,
+    max_temp: day.Temperature.Maximum.Value,
+    description: day.Day.IconPhrase
+  }));
+}
+
+// ---------- Weather API ----------
 app.get("/api/weather/:city", async (req, res) => {
   const { city } = req.params;
-
   try {
-    // 1. Geocode the city
-    const geoRes = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`);
-    const geoData = await geoRes.json();
-
-    if (!geoData || !geoData[0]) return res.status(404).json({ message: "City not found" });
-
-    const { lat, lon } = geoData[0];
-
-    // 2. Fetch 3-day daily forecast using One Call API
-    const forecastRes = await fetch(`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&units=metric&appid=${API_KEY}`);
-    const forecastData = await forecastRes.json();
-
-    if (!forecastData || !forecastData.daily) return res.status(500).json({ message: "Weather data not found" });
-
-    const forecast = forecastData.daily.slice(0, 3).map(day => {
-      return {
-        date: new Date(day.dt * 1000).toLocaleDateString(),
-        day_temp: day.temp.day,
-        min_temp: day.temp.min,
-        max_temp: day.temp.max,
-        description: day.weather[0].description
-      };
-    });
-
+    const locationKey = await getLocationKey(city);
+    const forecast = await get3DayForecast(locationKey);
     res.json({ city, forecast });
-
   } catch (err) {
-    console.error("Weather API Error:", err);
+    console.error("Weather API Error:", err.message);
     res.status(500).json({ message: "Error fetching weather" });
   }
 });
 
-/* ---------- Chatbot API ---------- */
+// ---------- Hotels API ----------
+app.get("/api/hotels/:city", async (req, res) => {
+  const city = req.params.city;
+  try {
+    const response = await fetch(`https://booking-com15.p.rapidapi.com/api/v1/hotels/search?name=${encodeURIComponent(city)}&checkin_date=2025-08-22&checkout_date=2025-08-25&adults_number=1&currency=USD&order_by=popularity&locale=en-us`, {
+      method: "GET",
+      headers: {
+        "X-RapidAPI-Key": RAPID_KEY,
+        "X-RapidAPI-Host": "booking-com15.p.rapidapi.com"
+      }
+    });
+    const data = await response.json();
+    res.json(data.result || []);
+  } catch (err) {
+    console.error("Hotels API Error:", err.message);
+    res.status(500).json([]);
+  }
+});
+
+// ---------- Car Rentals API ----------
+app.get("/api/cars", async (req, res) => {
+  const { pickUpLat, pickUpLng, dropOffLat, dropOffLng, pickUpTime, dropOffTime, driverAge } = req.query;
+  try {
+    const response = await fetch(`https://booking-com15.p.rapidapi.com/api/v1/cars/searchCarRentals?pick_up_latitude=${pickUpLat}&pick_up_longitude=${pickUpLng}&drop_off_latitude=${dropOffLat}&drop_off_longitude=${dropOffLng}&pick_up_time=${pickUpTime}&drop_off_time=${dropOffTime}&driver_age=${driverAge}&currency_code=USD`, {
+      method: "GET",
+      headers: {
+        "X-RapidAPI-Key": RAPID_KEY,
+        "X-RapidAPI-Host": "booking-com15.p.rapidapi.com"
+      }
+    });
+    const data = await response.json();
+    res.json(data.result || []);
+  } catch (err) {
+    console.error("Cars API Error:", err.message);
+    res.status(500).json([]);
+  }
+});
+
+// ---------- Chatbot API ----------
 app.post("/api/chat", async (req, res) => {
   const { question } = req.body;
   const lowerQ = question.toLowerCase();
@@ -132,55 +170,57 @@ app.post("/api/chat", async (req, res) => {
   }
 
   try {
-    // Weather-related queries
-    if (lowerQ.includes("weather") || lowerQ.includes("temperature") || lowerQ.includes("climate")) {
-      let city = "Udaipur";
-      const match = lowerQ.match(/in (\w+)/);
-      if (match) city = match[1];
-
-      const weatherRes = await fetch(`http://localhost:3000/api/weather/${city}`);
-      const weatherData = await weatherRes.json();
-
-      let text = `🌦️ Weather forecast for ${city}:\n`;
-      if (weatherData.forecast && weatherData.forecast.length > 0) {
-        weatherData.forecast.forEach(day => {
-          text += `📅 ${day.date}: ${day.day_temp}°C (Min: ${day.min_temp}°C, Max: ${day.max_temp}°C), ${day.description}\n`;
-        });
-      } else {
-        text += "No forecast available.";
+    // --- Weather Query ---
+    if (lowerQ.includes("weather")) {
+      const match = lowerQ.match(/weather(?: in)? ([a-zA-Z\s]+)/);
+      if (match) {
+        const city = match[1].trim();
+        const weatherRes = await fetch(`http://localhost:3000/api/weather/${encodeURIComponent(city)}`);
+        const weatherData = await weatherRes.json();
+        return res.json({ answer: `🌤️ Weather forecast for ${city}:\n${JSON.stringify(weatherData.forecast, null, 2)}` });
       }
-
-      return res.json({ answer: text });
     }
 
-    // Travel-related queries handled by Gemini
+    // --- Hotels Query ---
+    if (lowerQ.includes("hotel") || lowerQ.includes("stay")) {
+      const match = lowerQ.match(/hotels? in ([a-zA-Z\s]+)/);
+      if (match) {
+        const city = match[1].trim();
+        const hotelsRes = await fetch(`http://localhost:3000/api/hotels/${encodeURIComponent(city)}`);
+        const hotelsData = await hotelsRes.json();
+        return res.json({ answer: `🏨 Top hotels in ${city}:\n${JSON.stringify(hotelsData, null, 2)}` });
+      }
+    }
+
+    // --- Car Rentals Query ---
+    if (lowerQ.includes("car") || lowerQ.includes("rent")) {
+      const match = lowerQ.match(/cars? in ([a-zA-Z\s]+)/);
+      if (match) {
+        const city = match[1].trim();
+        const carsRes = await fetch(`http://localhost:3000/api/cars?pickUpLat=24.5854&pickUpLng=73.7125&dropOffLat=24.5854&dropOffLng=73.7125&pickUpTime=10:00&dropOffTime=18:00&driverAge=30`);
+        const carsData = await carsRes.json();
+        return res.json({ answer: `🚗 Available car rentals in ${city}:\n${JSON.stringify(carsData, null, 2)}` });
+      }
+    }
+
+    // --- General Travel Queries → Gemini AI ---
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
-You are a friendly, expert travel guide chatbot.
-You must ONLY answer questions related to travel.
-If not travel related: respond with "❌ I can only help with travel-related queries. ✈️"
+You are a friendly travel guide chatbot.
+Provide structured, day-by-day itineraries, attractions, food, tips, and include emojis.
+Only answer travel-related questions.
 
-When travel related:
-- Provide structured, day-by-day itinerary
-- Attractions, food, budget, tips
-- Minimum 3 days if duration not mentioned
-- Use bullet points & headings
-- Use emojis to make it engaging
-- Greet user well like it's hello, thank you etc. 
-
-User's question: "${question}"
+User asked: "${question}"
     `;
-
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = await response.text();
-    res.json({ answer: text });
+    const text = await (result.response.text ? result.response.text() : result.toString());
+    return res.json({ answer: text });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ answer: "Error occurred while generating response." });
+    console.error("❌ Chatbot Error:", err.message);
+    return res.status(500).json({ answer: "Error occurred while generating response." });
   }
 });
 
-/* ---------- Start Server ---------- */
+// ---------- Start Server ----------
 app.listen(3000, () => console.log("🚀 Server running on http://localhost:3000"));
