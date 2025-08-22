@@ -1,31 +1,32 @@
 body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
   margin: 0;
-  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(120deg, #ff9a9e, #fad0c4);
+  color: #333;
+  text-align: center;
 }
 
 header {
-  background: #6a11cb;
-  background: linear-gradient(to right, #2575fc, #6a11cb);
-  color: white;
-  text-align: center;
-  padding: 20px;
+  padding: 15px;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(8px);
 }
 
 nav a {
-  margin: 0 12px;
+  margin: 0 15px;
+  color: #333;
   text-decoration: none;
-  color: #fff;
   font-weight: bold;
 }
 
 nav a:hover {
-  color: #ffeb3b;
+  color: #ff6f61;
 }
 
-main {
-  text-align: center;
-  padding: 40px;
-  font-size: 18px;
+.about {
+  margin: 60px auto;
+  max-width: 600px;
+  padding: 20px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 15px;
 }

@@ -1,24 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Travel Guide Chatbot</title>
-
-  <!-- Styles -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Bot - Chat</title>
   <link rel="stylesheet" href="css/chatbot.css">
-  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="chat-container">
-    <div id="chat-box" class="chat-box"></div>
+  <header>
+    <h1>🤖 Travel Bot</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="chatbot.html" class="active">Chatbot</a>
+    </nav>
+  </header>
 
-    <!-- Input Area -->
-    <div class="input-area">
-      <input type="text" id="user-input" placeholder="Type your message..." />
-      <button id="send-btn">Send</button>
+  <main>
+    <div class="chat-container">
+      <div id="chat-window">
+        <ul id="messages"></ul>
+      </div>
+      <div class="input-container">
+        <input id="user-input" type="text" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+      </div>
     </div>
-  </div>
+  </main>
+
+  <footer>
+    <p>© 2025 Travel Bot | Your Virtual Travel Guide</p>
+  </footer>
 
   <script src="js/chatbot.js"></script>
 </body>
